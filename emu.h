@@ -21,7 +21,7 @@ class emu {
 
 		char halt;
 
-		int xorByte(unsigned char x, unsigned char y, unsigned char byte, long long cycle);
+		int xorByte(unsigned char x, unsigned char y, unsigned char byte, unsigned long cycle);
 
 	public:
 		emu(unsigned char display[32 * 64], unsigned short entry);

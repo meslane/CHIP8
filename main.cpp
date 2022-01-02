@@ -66,13 +66,16 @@ int main(void) {
 	unsigned short entry;
 
 	std::string filename;
-	printf(">");
-	std::cin >> filename;
+	std::ifstream f;
 
-	std::ifstream f(filename.c_str(), std::ios::binary);
-	if (!f) {
-		printf("ERROR: cannot open file %s\n", filename.c_str());
-		return 1;
+	while (!f.is_open()) {
+		printf(">");
+		std::cin >> filename;
+
+		f.open(filename.c_str(), std::ios::binary);
+		if (!f.is_open()) {
+			printf("ERROR: cannot open file %s\n", filename.c_str());
+		}
 	}
 
 	f.read(buffer, 4096);

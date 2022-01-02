@@ -16,7 +16,7 @@ unsigned short combineNibbles(unsigned char nibbles[4]) {
 	return result;
 }
 
-int emu::xorByte(unsigned char x, unsigned char y, unsigned char byte, long long cycle) {
+int emu::xorByte(unsigned char x, unsigned char y, unsigned char byte, unsigned long cycle) {
 	for (unsigned char i = 0; i < 8; i++) {
 		if ((x + (64 * y) + i) < (32 * 64)) { //bounds check
 			if (((byte << i) & 0x80) == 0x80) {
@@ -38,7 +38,7 @@ int emu::xorByte(unsigned char x, unsigned char y, unsigned char byte, long long
 			}
 		}
 		else {
-			printf("ERROR: bounds violation attempting to draw sprite at x:%d y:%d cycle:%llu\n", x, y, cycle);
+			printf("ERROR: bounds violation attempting to draw sprite at x:%d y:%d cycle:%lu\n", x, y, cycle);
 			return 1;
 		}
 	}
@@ -126,7 +126,12 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 					break;
 				case 0xEE: //RET (return from subroutine
 					PC = stack[SP];
-					SP--;
+					if (SP > 0) {
+						SP--;
+					}
+					else {
+						printf("ERROR: stack underflow violation, attempting to pop empty stack at cycle:%lu", cycle);
+					}
 					break;
 			}
 			break;
@@ -134,7 +139,12 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 			PC = combineNibbles(nibbles);
 			break;
 		case 0x2: //CALL addr (call subroutine at address)
-			SP++;
+			if (SP < 63) {
+				SP++;
+			}
+			else {
+				printf("ERROR: stack overflow violation, attempting to push full stack at cycle:%lu", cycle);
+			}
 			stack[SP] = PC;
 			PC = combineNibbles(nibbles);
 			break;
@@ -262,18 +272,18 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 				case 0x29: //LD F, Vx (set I to the hex digit sprite location stored in Vx)
 					I = 0x100 + (5 * registers[nibbles[2]]);
 					break;
-				case 0x33: //LD B, Vx (store BCD of Vx in I, I+2, I+3)
+				case 0x33: //LD B, Vx (store BCD of Vx in I, I+2, I+3) BROKEN
 					memory[I] = registers[nibbles[2]] / 100;
 					memory[I + 1] = (registers[nibbles[2]] / 10) % 10;
 					memory[I + 2] = registers[nibbles[2]] % 10;
 					break;
-				case 0x55: //LD [I], Vx (store all registers in memory starting at I)
-					for (unsigned char i = 0; i < 16; i++) {
+				case 0x55: //LD [I], Vx (store all registers in memory starting at I) BROKEN
+					for (unsigned char i = 0; i <= nibbles[2]; i++) {
 						memory[I + i] = registers[i];
 					}
 					break;
 				case 0x65: //LD Vx, [I] (read memory starting at I until Vx into registers)
-					for (unsigned char i = 0; i < nibbles[2]; i++) {
+					for (unsigned char i = 0; i <= nibbles[2]; i++) {
 						registers[i] = memory[I + i];
 					}
 					break;
