@@ -57,6 +57,7 @@ static void sizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 int main(void) {
+	srand(time(0));
 	glfwInit();
 
 	/* read ROM */

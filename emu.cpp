@@ -16,23 +16,24 @@ unsigned short combineNibbles(unsigned char nibbles[4]) {
 	return result;
 }
 
-int xorByte(unsigned char* disp, unsigned char x, unsigned char y, unsigned char byte, long long cycle) {
+int emu::xorByte(unsigned char x, unsigned char y, unsigned char byte, long long cycle) {
 	for (unsigned char i = 0; i < 8; i++) {
 		if ((x + (64 * y) + i) < (32 * 64)) { //bounds check
 			if (((byte << i) & 0x80) == 0x80) {
-				if (disp[x + (64 * y) + i] == 0) { //1,0
-					disp[x + (64 * y) + i] = 255;
+				if (display[x + (64 * y) + i] == 0) { //1,0
+					display[x + (64 * y) + i] = 255;
 				}
 				else { //1,1
-					disp[x + (64 * y) + i] = 0;
+					display[x + (64 * y) + i] = 0;
+					registers[0xF] = 1;
 				}
 			}
 			else {
-				if (disp[x + (64 * y) + i] == 0) { //0,0
-					disp[x + (64 * y) + i] = 0;
+				if (display[x + (64 * y) + i] == 0) { //0,0
+					display[x + (64 * y) + i] = 0;
 				}
 				else { //0,1
-					disp[x + (64 * y) + i] = 255;
+					display[x + (64 * y) + i] = 255;
 				}
 			}
 		}
@@ -209,8 +210,9 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 			registers[nibbles[2]] = ((rand() % 256) & LSB);
 			break;
 		case 0xD: //DRW Vx, Vy, nibble (draw sprite pointed to by I with nibble bytes at location Vx, Vy)
+			registers[0xF] = 0;
 			for (unsigned char i = 0; i < nibbles[0]; i++) {
-				if (xorByte(this->display, registers[nibbles[2]], 31 - (registers[nibbles[1]] + i), memory[I + i], cycle) == 1) {
+				if (xorByte(registers[nibbles[2]], 31 - (registers[nibbles[1]] + i), memory[I + i], cycle) == 1) {
 					break;
 				}
 			}
