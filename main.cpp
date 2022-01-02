@@ -13,11 +13,10 @@
 #define H 32
 #define W 64
 
-#define DELAY 3000
-
 typedef struct EmuArgs {
 	emu* emulator;
 	GLFWwindow* window;
+	unsigned short delay;
 }emuArgs;
 
 void emuThread(emuArgs* args) {
@@ -40,7 +39,7 @@ void emuThread(emuArgs* args) {
 		}
 
 		args->emulator->tick(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), keys, ofile);
-		for (unsigned short i = 0; i < DELAY; i++) { Sleep(0); }
+		for (unsigned short i = 0; i < args->delay; i++) { Sleep(0); }
 	}
 
 	ofile.close();
@@ -64,6 +63,7 @@ int main(void) {
 	char buffer[4096];
 	unsigned short buflen;
 	unsigned short entry;
+	unsigned short delay;
 
 	std::string filename;
 	std::ifstream f;
@@ -86,6 +86,8 @@ int main(void) {
 
 	printf("Specify an entry point address (this will be 512 in most cases)\n>");
 	std::cin >> entry;
+	printf("Input a delay value (0 for as fast as possible, 3000-5000 is sufficent for most games)\n>");
+	std::cin >> delay;
 
 	/* create window */
 	GLFWwindow* window = glfwCreateWindow(1280, 640, "CHIP8", NULL, NULL);
@@ -156,13 +158,12 @@ int main(void) {
 
 	args->emulator = emulator;
 	args->window = window;
+	args->delay = delay;
 
 	_beginthread((void(*)(void*)) &emuThread, 0, args); 
 
 	/* main loop */
 	while (!glfwWindowShouldClose(window)) {
-		//emulator->tick(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), 0, ofile);
-
 		/* render texture */
 		glTexImage2D(GL_TEXTURE_2D, 0, 1, W, H, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, display);
 
@@ -179,5 +180,4 @@ int main(void) {
 	delete emulator;
 	return 0;
 }
-
 //dedicated to Zedd

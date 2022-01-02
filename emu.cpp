@@ -16,33 +16,29 @@ unsigned short combineNibbles(unsigned char nibbles[4]) {
 	return result;
 }
 
-int emu::xorByte(unsigned char x, unsigned char y, unsigned char byte, unsigned long cycle) {
+void emu::xorByte(unsigned char x, unsigned char y, unsigned char byte) {
+	unsigned short index;
+
 	for (unsigned char i = 0; i < 8; i++) {
-		if ((x + (64 * y) + i) < (32 * 64)) { //bounds check
-			if (((byte << i) & 0x80) == 0x80) {
-				if (display[x + (64 * y) + i] == 0) { //1,0
-					display[x + (64 * y) + i] = 255;
-				}
-				else { //1,1
-					display[x + (64 * y) + i] = 0;
-					registers[0xF] = 1;
-				}
+		index = ((x + i) % 64) + (64 * (y % 32));
+		if (((byte << i) & 0x80) == 0x80) {
+			if (display[index] == 0) { //1,0
+				display[index] = 255;
 			}
-			else {
-				if (display[x + (64 * y) + i] == 0) { //0,0
-					display[x + (64 * y) + i] = 0;
-				}
-				else { //0,1
-					display[x + (64 * y) + i] = 255;
-				}
+			else { //1,1
+				display[index] = 0;
+				registers[0xF] = 1;
 			}
 		}
 		else {
-			printf("ERROR: bounds violation attempting to draw sprite at x:%d y:%d cycle:%lu\n", x, y, cycle);
-			return 1;
+			if (display[index] == 0) { //0,0
+				display[index] = 0;
+			}
+			else { //0,1
+				display[index] = 255;
+			}
 		}
 	}
-	return 0;
 }
 
 emu::emu(unsigned char disp[32 * 64], unsigned short entry) {
@@ -131,6 +127,7 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 					}
 					else {
 						printf("ERROR: stack underflow violation, attempting to pop empty stack at cycle:%lu", cycle);
+						exit(1);
 					}
 					break;
 			}
@@ -144,6 +141,7 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 			}
 			else {
 				printf("ERROR: stack overflow violation, attempting to push full stack at cycle:%lu", cycle);
+				exit(1);
 			}
 			stack[SP] = PC;
 			PC = combineNibbles(nibbles);
@@ -222,9 +220,7 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 		case 0xD: //DRW Vx, Vy, nibble (draw sprite pointed to by I with nibble bytes at location Vx, Vy)
 			registers[0xF] = 0;
 			for (unsigned char i = 0; i < nibbles[0]; i++) {
-				if (xorByte(registers[nibbles[2]], 31 - (registers[nibbles[1]] + i), memory[I + i], cycle) == 1) {
-					break;
-				}
+				xorByte(registers[nibbles[2]], 31 - (registers[nibbles[1]] + i), memory[I + i]);
 			}
 			break;
 		case 0xE: //key skips
