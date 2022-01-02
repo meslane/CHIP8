@@ -1,0 +1,12 @@
+*.vcxproj
+*.vcsproj.filters
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+**/x64/
+**/Debug/
+**/.vs/
+**/glad.c
+debug.csv
+roms
+Libraries
