@@ -30,7 +30,9 @@ void emuThread(emuArgs* args) {
 						GLFW_KEY_C, GLFW_KEY_D, GLFW_KEY_E, GLFW_KEY_F};
 
 	unsigned short keys = 0;
+	long long start, end;
 	while (!glfwWindowShouldClose(args->window)) {
+		start = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 		keys = 0;
 		for (unsigned char i = 0; i < 16; i++) {
 			if (glfwGetKey(args->window, keycodes[i]) == GLFW_PRESS) {
@@ -43,7 +45,9 @@ void emuThread(emuArgs* args) {
 		}
 
 		args->emulator->tick(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), keys, ofile);
-		for (unsigned short i = 0; i < args->delay; i++) { Sleep(0); }
+		do {
+			end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		} while (end - start < args->delay);
 	}
 
 	ofile.close();
@@ -90,7 +94,7 @@ int main(void) {
 
 	printf("Specify an entry point address (this will be 512 in most cases)\n>");
 	std::cin >> entry;
-	printf("Input a delay value (0 for as fast as possible, 3000-5000 is sufficent for most games)\n>");
+	printf("Input a delay value (0 for as fast as possible, 2000-4000 is sufficent for most games)\n>");
 	std::cin >> delay;
 
 	/* create window */

@@ -153,9 +153,12 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 						SP--;
 					}
 					else {
-						printf("ERROR: stack underflow violation, attempting to pop empty stack at cycle:%lu", cycle);
+						printf("ERROR: stack underflow violation, attempting to pop empty stack at cycle:%lu\n", cycle);
 						exit(1);
 					}
+					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
 					break;
 			}
 			break;
@@ -167,7 +170,7 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 				SP++;
 			}
 			else {
-				printf("ERROR: stack overflow violation, attempting to push full stack at cycle:%lu", cycle);
+				printf("ERROR: stack overflow violation, attempting to push full stack at cycle:%lu\n", cycle);
 				exit(1);
 			}
 			stack[SP] = PC;
@@ -184,8 +187,15 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 			}
 			break;
 		case 0x5: //SE Vx, Vy (skip next instruction if Vx == Vy)
-			if (registers[nibbles[2]] == registers[nibbles[1]]) {
-				PC += 2;
+			switch (nibbles[0]) {
+				case 0x0:
+					if (registers[nibbles[2]] == registers[nibbles[1]]) {
+						PC += 2;
+					}
+					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
+					break;
 			}
 			break;
 		case 0x6: //LD Vx, byte (load register with LSB)
@@ -228,11 +238,21 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 					registers[0xF] = ((registers[nibbles[2]] & 0x80) == 0x80);
 					registers[nibbles[2]] = registers[nibbles[2]] << 1;
 					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
+					break;
 			}
 			break;
 		case 0x9: //SNE Vx, Vy (skip next instruction if Vx != Vy)
-			if (registers[nibbles[2]] != registers[nibbles[1]]) {
-				PC += 2;
+			switch (nibbles[0]) {
+				case 0x0:
+					if (registers[nibbles[2]] != registers[nibbles[1]]) {
+						PC += 2;
+					}
+					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
+					break;
 			}
 			break;
 		case 0xA: //LD I, addr (load index register)
@@ -261,6 +281,9 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 					if (((keys >> registers[nibbles[2]]) & 0x01) != 0x01) {
 						PC += 2;
 					}
+					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
 					break;
 			}
 			break;
@@ -309,6 +332,9 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 					for (unsigned char i = 0; i <= nibbles[2]; i++) {
 						registers[i] = memory[I + i];
 					}
+					break;
+				default:
+					printf("ERROR: undefined opcode at cycle:%lu\n", cycle);
 					break;
 			}
 			break;
