@@ -6,6 +6,9 @@
 #include <stdlib.h> 
 #include <iomanip>
 
+#include <Windows.h>
+#pragma comment(lib, "winmm.lib")
+
 unsigned short combineNibbles(unsigned char nibbles[4]) {
 	unsigned short result = 0;
 
@@ -48,6 +51,7 @@ emu::emu(unsigned char disp[32 * 64], unsigned short entry) {
 
 	this->I = 0;
 	this->PC = entry;
+	this->entry = entry;
 	this->SP = 0;
 
 	this->halt = 0;
@@ -86,6 +90,20 @@ unsigned char* emu::getMemory() {
 	return this->memory;
 }
 
+void emu::reset() {
+	memset(this->registers, 0, 16);
+	memset(this->stack, 0, 64);
+	memset(this->display, 0, 32 * 64);
+	this->sound = 0;
+	this->delay = 0;
+
+	this->I = 0;
+	this->PC = entry;
+	this->SP = 0;
+
+	this->halt = 0;
+}
+
 int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 	static unsigned char MSB, LSB;
 	static unsigned char nibbles[4];
@@ -107,9 +125,18 @@ int emu::tick(long long time, unsigned short keys, std::ofstream& debug) {
 	}
 
 	/* counter decrementing */
+	static unsigned char soundprior = 0;
 	if (time - last >= 17) { //~17 ms period
 		last = time;
 
+		if (sound > 0 && (soundprior < sound)) {
+			PlaySound(TEXT("audio/square150.wav"), NULL, SND_FILENAME | SND_ASYNC);
+		}
+		if (sound == 0 && (soundprior != 0)) {
+			PlaySound(NULL, 0, 0);
+		}
+
+		soundprior = sound;
 		sound = (sound > 0) ? sound - 1 : 0;
 		delay = (delay > 0) ? delay - 1 : 0;
 	}

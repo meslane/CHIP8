@@ -20,6 +20,7 @@ class emu {
 		unsigned char memory[4096];
 
 		char halt;
+		unsigned short entry;
 
 		void xorByte(unsigned char x, unsigned char y, unsigned char byte);
 
@@ -28,6 +29,7 @@ class emu {
 		int tick(long long time, unsigned short keys, std::ofstream& debug);
 		void load(unsigned char* data, unsigned short len, unsigned short entry);
 		unsigned char* getMemory();
+		void reset();
 };
 
 #endif

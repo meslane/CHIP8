@@ -38,6 +38,10 @@ void emuThread(emuArgs* args) {
 			}
 		}
 
+		if (glfwGetKey(args->window, GLFW_KEY_R) == GLFW_PRESS) {
+			args->emulator->reset();
+		}
+
 		args->emulator->tick(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(), keys, ofile);
 		for (unsigned short i = 0; i < args->delay; i++) { Sleep(0); }
 	}
