@@ -23,28 +23,30 @@ void emu::xorByte(unsigned char x, unsigned char y, unsigned char byte) {
 	unsigned short index;
 
 	for (unsigned char i = 0; i < 8; i++) {
-		index = ((x + i) % 64) + (64 * (y % 32));
-		if (((byte << i) & 0x80) == 0x80) {
-			if (display[index] == 0) { //1,0
-				display[index] = 255;
+		if ((wrap == 1) || ((x + i < 64) && (y < 32))) {
+			index = ((x + i) % 64) + (64 * (y % 32));
+			if (((byte << i) & 0x80) == 0x80) {
+				if (display[index] == 0) { //1,0
+					display[index] = 255;
+				}
+				else { //1,1
+					display[index] = 0;
+					registers[0xF] = 1;
+				}
 			}
-			else { //1,1
-				display[index] = 0;
-				registers[0xF] = 1;
-			}
-		}
-		else {
-			if (display[index] == 0) { //0,0
-				display[index] = 0;
-			}
-			else { //0,1
-				display[index] = 255;
+			else {
+				if (display[index] == 0) { //0,0
+					display[index] = 0;
+				}
+				else { //0,1
+					display[index] = 255;
+				}
 			}
 		}
 	}
 }
 
-emu::emu(unsigned char disp[32 * 64], unsigned short entry) {
+emu::emu(unsigned char disp[32 * 64], unsigned short entry, char wrap) {
 	memset(this->registers, 0, 16);
 	this->sound = 0;
 	this->delay = 0;
@@ -52,6 +54,7 @@ emu::emu(unsigned char disp[32 * 64], unsigned short entry) {
 	this->I = 0;
 	this->PC = entry;
 	this->entry = entry;
+	this->wrap = wrap;
 	this->SP = 0;
 
 	this->halt = 0;

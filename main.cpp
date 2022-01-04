@@ -72,6 +72,7 @@ int main(void) {
 	unsigned short buflen;
 	unsigned short entry;
 	unsigned short delay;
+	char wrap;
 
 	std::string filename;
 	std::ifstream f;
@@ -96,6 +97,8 @@ int main(void) {
 	std::cin >> entry;
 	printf("Input a delay value (0 for as fast as possible, 2000-4000 is sufficent for most games)\n>");
 	std::cin >> delay;
+	printf("Wraparound out of bounds sprites y/n? (some games will require this to be true, others will require it to be false)\n>");
+	std::cin >> wrap;
 
 	/* create window */
 	GLFWwindow* window = glfwCreateWindow(1280, 640, "CHIP8", NULL, NULL);
@@ -159,7 +162,9 @@ int main(void) {
 	unsigned char display[32 * 64];
 	memset(display, 0, 32 * 64);
 
-	emu* emulator = new emu(display, entry);
+	wrap = (wrap == 'y' || wrap == 'Y') ? 1 : 0;
+
+	emu* emulator = new emu(display, entry, wrap);
 	emulator->load((unsigned char*)buffer, buflen, entry);
 
 	emuArgs* args = new emuArgs;
@@ -169,6 +174,7 @@ int main(void) {
 	args->delay = delay;
 
 	_beginthread((void(*)(void*)) &emuThread, 0, args); 
+	printf("Launching emulator\n");
 
 	/* main loop */
 	while (!glfwWindowShouldClose(window)) {

@@ -20,12 +20,13 @@ class emu {
 		unsigned char memory[4096];
 
 		char halt;
+		char wrap;
 		unsigned short entry;
 
 		void xorByte(unsigned char x, unsigned char y, unsigned char byte);
 
 	public:
-		emu(unsigned char display[32 * 64], unsigned short entry);
+		emu(unsigned char display[32 * 64], unsigned short entry, char wrap);
 		int tick(long long time, unsigned short keys, std::ofstream& debug);
 		void load(unsigned char* data, unsigned short len, unsigned short entry);
 		unsigned char* getMemory();
