@@ -77,6 +77,12 @@ int main(void) {
 	std::string filename;
 	std::ifstream f;
 
+	printf(" 888  8   8  88888  8888           888 \n");
+	printf("8     8   8    8    8   8         8   8\n");
+	printf("8     88888    8    8888   88888   888 \n");
+	printf("8     8   8    8    8             8   8\n");
+	printf(" 888  8   8  88888  8              888 \n\n");
+
 	while (!f.is_open()) {
 		printf(">");
 		std::cin >> filename;
